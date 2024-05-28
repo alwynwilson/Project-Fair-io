@@ -17,8 +17,10 @@ const Footer = () => {
         <div className="links d-flex flex-column">
           <h5>Links</h5>
           <Link to={'/'} style={{textDecoration:'none',color:'White'}}>Home</Link>
-          <Link to={'/login'} style={{textDecoration:'none',color:'White'}}>Cart</Link>
-          <Link to={'/register'} style={{textDecoration:'none',color:'White'}}>Wishlist</Link>
+          <Link to={'/login'} style={{textDecoration:'none',color:'White'}}>Login</Link>
+          <Link to={'/register'} style={{textDecoration:'none',color:'White'}}>Register</Link>
+          <Link to={'/projects'} style={{textDecoration:'none',color:'White'}}>Projects</Link>
+          <Link to={'/dashboard'} style={{textDecoration:'none',color:'White'}}>Dashboard</Link>
         </div>
 
         <div className="guides d-flex flex-column">

@@ -1,11 +1,49 @@
-import React from 'react'
+import React, { useState } from 'react'
 import loginImg from "../assets/loginImg.webp"
 import { FloatingLabel, Form } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
-
-
+import { Link,  useNavigate } from 'react-router-dom'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import {registerAPI} from '../services/allAPI'
 
 const Auth = ({insideRegister}) => {
+
+  const [userData,setUserData] = useState({
+    username:"",email:"",password:""
+  })
+  console.log(userData);
+  const navigate = useNavigate()
+
+  const handleRegister = async (e)=>{
+    e.preventDefault()
+    if(userData.username && userData.email && userData.password){
+      try{
+        //api call
+        const result = await registerAPI(userData)
+        console.log(result);
+        if(result.status==200){
+          toast.warning(`Welcome ${result?.data?.username}... Please login to explore our website`)
+          setUserData({
+            username:"",email:"",password:""
+          })
+          navigate('/login')
+        }else{
+          if(result.response.status==406){
+            toast.error(result.response.data)
+            setUserData({
+              username:"",email:"",password:""
+            })
+
+          }
+        }
+
+      }catch(err){
+        console.log(err);
+      }
+    }else{
+      toast.warning("Please fill the form completely")
+    }
+  }
   return (
     <div style={{width:'100%',height:"100vh"}} className='d-flex justify-content-center align-items-center'>
       <div className='container w-75'>
@@ -22,28 +60,32 @@ const Auth = ({insideRegister}) => {
               <Form>
                 {
                   insideRegister &&
-                  <FloatingLabel
-                    controlId="floatingInputname"
-                    label="Username"
-                    className="mb-3"
-                >
-                    <Form.Control type="text" placeholder="Username" />
-                </FloatingLabel>
+                  <FloatingLabel controlId="floatingInputname" label="Username" className="mb-3">
+                    <Form.Control 
+                    value={userData.username}
+                    onChange={e=>setUserData({...userData,username:e.target.value})} 
+                    type="text" 
+                    placeholder="Username" />
+                  </FloatingLabel>
                 }
-                <FloatingLabel
-                    controlId="floatingInput"
-                    label="Email address"
-                    className="mb-3"
-                >
-                    <Form.Control type="email" placeholder="name@example.com" />
+                <FloatingLabel controlId="floatingInput" label="Email address" className="mb-3">
+                    <Form.Control 
+                    value={userData.email}
+                    onChange={e=>setUserData({...userData,email:e.target.value})} 
+                    type="email" 
+                    placeholder="name@example.com" />
                 </FloatingLabel>
                 <FloatingLabel controlId="floatingPassword" label="Password">
-                      <Form.Control type="password" placeholder="Password" />
+                      <Form.Control 
+                      value={userData.password}
+                      onChange={e=>setUserData({...userData,password:e.target.value})} 
+                      type="password" 
+                      placeholder="Password" />
                 </FloatingLabel>
                 {
                   insideRegister ?
                   <div className="mt-3">
-                    <button className="btn btn-primary">Register</button>
+                    <button onClick={handleRegister} className="btn btn-primary">Register</button>
                     <p className='mt-2'> Already have an account ? Click here to <Link to="/login">Login</Link></p>
                   </div>
                   :
@@ -57,6 +99,7 @@ const Auth = ({insideRegister}) => {
           </div>
         </div>
       </div>
+      <ToastContainer position='top-center' theme='colored' autoclose={3000}/>
     </div>
   )
 }

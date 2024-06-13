@@ -13,7 +13,12 @@ const Home = () => {
             <div className="col-lg-6">
               <h1 style={{fontSize:'80px'}}><i className='fa-brands fa-docker'></i>Project Fair</h1>
               <p style={{textAlign:'justify'}}>Designed and built with all love in the world by the luminar team with the help of our contributors </p>
-              <Link to="/login" className="btn btn-warning">START TO EXPLORE</Link>
+              {
+                sessionStorage.getItem("token")?
+                <Link to="/dashboard" className="btn btn-warning">MANAGE YOUR PROJECTS</Link>
+                :
+                <Link to="/login" className="btn btn-warning">START TO EXPLORE</Link>
+                }
             </div>
             <div className="col-lg-6">
               <img className="img-fluid rounded-5" src={Landing} alt="Landing" />

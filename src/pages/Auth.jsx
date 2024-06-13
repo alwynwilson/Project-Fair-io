@@ -1,19 +1,26 @@
 import React, { useState } from 'react'
 import loginImg from "../assets/loginImg.webp"
 import { FloatingLabel, Form } from 'react-bootstrap'
-import { Link,  useNavigate } from 'react-router-dom'
+import { Link,  Navigate,  useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {registerAPI} from '../services/allAPI'
+import {loginAPI, registerAPI} from '../services/allAPI'
+import Spinner from 'react-bootstrap/Spinner';
 
 const Auth = ({insideRegister}) => {
 
+
+  // state for spinner 
+  const [isLoggedin,setIsLoggedin]= useState(false)
+
+  
   const [userData,setUserData] = useState({
     username:"",email:"",password:""
   })
   console.log(userData);
   const navigate = useNavigate()
 
+  // register
   const handleRegister = async (e)=>{
     e.preventDefault()
     if(userData.username && userData.email && userData.password){
@@ -44,6 +51,41 @@ const Auth = ({insideRegister}) => {
       toast.warning("Please fill the form completely")
     }
   }
+
+  // Login
+  const handleLogin = async (e)=>{
+    e.preventDefault()
+    if(userData.email && userData.password){
+      //api call
+      try{
+        const result = await loginAPI(userData)
+        console.log(result);
+        if(result.status==200){
+          setIsLoggedin(true)
+          sessionStorage.setItem("user",JSON.stringify(result.data.user))
+          sessionStorage.setItem("token",result.data.token)
+          // toast.warning(`Welcome ${result.data.user.username}..`)
+          
+          setTimeout(()=>{
+            setUserData({
+              username:"",email:"",password:""
+            })
+            setIsLoggedin(false)
+            navigate('/')},3000)
+        }else{
+          if(result.response.status==404){
+            toast.error(result.response.data)
+          }
+        }
+      }catch(err){
+        console.log(err);
+      }
+    }else{
+      toast.warning("Please fill the form completely")
+    }
+  }
+
+
   return (
     <div style={{width:'100%',height:"100vh"}} className='d-flex justify-content-center align-items-center'>
       <div className='container w-75'>
@@ -90,7 +132,11 @@ const Auth = ({insideRegister}) => {
                   </div>
                   :
                   <div className="mt-3">
-                    <button className="btn btn-primary">Login</button>
+                    <button onClick={handleLogin} className="btn btn-primary">Login
+                      {
+                        isLoggedin && <Spinner animation="border" className='ms-1' variant="light"></Spinner>
+                      }
+                    </button>
                     <p className='mt-2'> New user ? Click here to <Link to="/register">Register</Link></p>
                   </div>
                 }

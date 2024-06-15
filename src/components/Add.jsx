@@ -3,6 +3,9 @@ import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import uploadImg from '../assets/uploadImg.png'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { addProjectAPI } from '../services/allAPI';
 
 const Add = () => {
   const [preview,setPreview] = useState(uploadImg)
@@ -13,7 +16,12 @@ const Add = () => {
   const [show, setShow] = useState(false);
   
   console.log(projectDetails);
-  const handleClose = () => setShow(false);
+  const handleClose = () => {
+    setShow(false)
+    setProjectDetails({
+      title:"",languages:"",github:"",websites:"",overview:"",projectImg:""
+    })
+  }
   const handleShow = () => setShow(true);
 
   useEffect(()=>{
@@ -22,9 +30,49 @@ const Add = () => {
       setPreview(URL.createObjectURL(projectDetails.projectImg))
     }else{
       setImageFileStatus(false)
+      setPreview(uploadImg)
       setProjectDetails({...projectDetails,projectImg:""})
     }
   },[projectDetails.projectImg])
+
+  const handleAddProject = async ()=>{
+    const {title,languages,github,websites,overview,projectImg} = projectDetails
+    if(projectDetails.title && projectDetails.languages && projectDetails.github && projectDetails.websites && projectDetails.overview && projectDetails.projectImg){
+        // api call req-body req-header
+        //req-body
+        const reqBody = new FormData()
+        reqBody.append("title",title)
+        reqBody.append("languages",languages)
+        reqBody.append("github",github)
+        reqBody.append("websites",websites)
+        reqBody.append("overview",overview)
+        reqBody.append("projectImg",projectImg)
+
+        const token = sessionStorage.getItem("token")
+        if(token){
+          const reqHeader = {
+            "Content-Type":"multipart/form-data",
+            "Authorization":`Bearer ${token}`
+          }
+
+          //api-call - reqbody, reqHeader
+          try{
+            const result = await addProjectAPI(reqBody,reqHeader)
+            if(result.status==200){
+              handleClose()
+              toast.success("Project Added successfully")
+            }else{
+              toast.warning(result.response.data)
+            }
+          }catch(err){
+            console.log(err);
+          }
+        }
+
+    }else{
+      toast.info("Please fill the form completely")
+    }
+  }
   return (
     <>
       <button onClick={handleShow} className="btn btn-primary"><i className="fa-solid fa-plus"></i>Add Project</button>
@@ -83,11 +131,13 @@ const Add = () => {
           <Button variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleClose}>
+          <Button variant="primary" onClick={handleAddProject}>
             Add
           </Button>
         </Modal.Footer>
       </Modal>
+      <ToastContainer position='top-center' theme='colored' autoclose={3000}/>
+
     </>
   )
 }

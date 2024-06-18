@@ -2,9 +2,37 @@ import React from 'react'
 import Header from '../components/Header'
 import ProjectCard from '../components/ProjectCard'
 import {Col, Row} from 'react-bootstrap'
+import { allProjectAPI } from '../services/allAPI'
 
 
 const Projects = () => {
+
+  const [allProjects,setAllProjects] = useState([])
+  console.log(allProjects);
+
+  useEffect(()=>{
+    getAllProjects()
+  },[])
+
+  const getAllProjects = async ()=>{
+    const token = sessionStorage.getItem("token")
+    if(token){
+      const reqHeader = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+      //api call
+      try{
+        const result = await allProjectAPI(reqHeader)
+        console.log(result);
+        if(result.status==200){
+          setAllProjects(result.data)
+        }
+      }catch(err){
+        console.log(err);
+      }
+    }
+  }
   return (
     <>
       <Header/>

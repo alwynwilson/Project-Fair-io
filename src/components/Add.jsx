@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useContext, useEffect} from 'react'
 import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -6,8 +6,14 @@ import uploadImg from '../assets/uploadImg.png'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { addProjectAPI } from '../services/allAPI';
+import { addResponseContext } from '../context/ContextAPI';
+addResponseContext
+
 
 const Add = () => {
+  const {addResponse,setAddResponse} = useContext(addResponseContext)
+
+
   const [preview,setPreview] = useState(uploadImg)
   const [imageFileStatus,setImageFileStatus] = useState(false)
   const [projectDetails,setProjectDetails] = useState({
@@ -61,6 +67,7 @@ const Add = () => {
             if(result.status==200){
               handleClose()
               toast.success("Project Added successfully")
+              setAddResponse(result)
             }else{
               toast.warning(result.response.data)
             }

@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Add from '../components/Add'
 import Edit from '../components/Edit'
 import { userProjectAPI } from '../services/allAPI'
+import { addResponseContext } from '../context/ContextAPI'
 
 const View = () => {
+
+  const {addResponse,setAddResponse} = useContext(addResponseContext)
   const [userProjects,setUserProjects] = useState([])
 
   useEffect(()=>{
     getUserProjects()
-  })
+  },[addResponse])
 
   const getUserProjects = async ()=>{
     const token = sessionStorage.getItem("token")
@@ -21,7 +24,7 @@ const View = () => {
       //api-call - reqbody, reqHeader
       try{
         const result = await userProjectAPI(reqHeader)
-        console.log(result);
+        //console.log(result);
         if(result.status==200){
           setUserProjects(result.data)
         }
@@ -45,7 +48,7 @@ const View = () => {
             <div key={project?._id} className="border rounded p-2 d-flex justify-content-between mb-3">
             <h3>{project?.title}</h3>
             <div className="d-flex">
-              <div><Edit/></div>
+              <div><Edit project={project}/></div>
               <div className='btn'><a href={project?.github} target='_blank'><i className="fa-brands fa-github"></i></a></div>
               <button className='btn text-danger'><i className='fa-solid fa-trash'></i></button>
             </div>

@@ -6,13 +6,13 @@ import { allProjectAPI } from '../services/allAPI'
 
 
 const Projects = () => {
-
+  const [searchKey,setSearchKey] = useState("")
   const [allProjects,setAllProjects] = useState([])
   console.log(allProjects);
 
   useEffect(()=>{
     getAllProjects()
-  },[])
+  },[searchKey])
 
   const getAllProjects = async ()=>{
     const token = sessionStorage.getItem("token")
@@ -23,7 +23,7 @@ const Projects = () => {
       }
       //api call
       try{
-        const result = await allProjectAPI(reqHeader)
+        const result = await allProjectAPI(searchKey,reqHeader)
         console.log(result);
         if(result.status==200){
           setAllProjects(result.data)
@@ -35,26 +35,27 @@ const Projects = () => {
   }
   return (
     <>
-      <Header/>
-      <div style={{marginTop:'150px'}} className="container-fluid">
+      <Header />
+
+      <div style={{ marginTop: "150px" }} className='container-fluid'>
         <div className="d-flex justify-content-between">
           <h1>All Projects</h1>
-          <input type="text" className='form-control w-25' placeholder='Search projects by language used'/>
+          <input onChange={e=>setSearchKey(e.target.value)} type="text" className='form-control w-25' placeholder='Search Projects By Language Used' />
         </div>
-        <Row className="mt-3">
-        {
-          allProjects?.length>0?
-          allProjects?.map(project=>(
-            <Col key={project?.id} className='mb-3' sm={12} md={6} lg={3} >
-            <ProjectCard displayData={project}/>
-            </Col>
-          ))
-          :
-          <div className="fw-bolder text-danger m-5 text-center">Projects Not found</div>
-       }
+        <Row className='mt-3'>
+          {allProjects?.length > 0 ?
+            allProjects?.map(project => (
+              <Col key={project?._id} className='mb-3' sm={12} md={6} lg={4}>
+                <ProjectCard displayData={project}/>
+              </Col>
+            ))
+            :
+            <div className='fw-bolder text-danger m-5 text-center'>Project Not Found</div>
+          }
         </Row>
       </div>
     </>
+
   )
 }
 

@@ -1,12 +1,16 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext,useEffect, useState } from 'react'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import uploadImg from '../assets/uploadImg.png'
 import SERVERURL from '../services/serverurl';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { editProjectAPI } from '../services/allAPI';
+import { editResponseContext } from '../context/ContextAPI';
 
 const Edit = ({project}) => {
   
+  const {editResponse,setEditResponse} = useContext(editResponseContext)
   const [imageFileStatus,setImageFileStatus] = useState(true)
 
   const [projectDetails,setProjectDetails] = useState({
@@ -16,20 +20,63 @@ const Edit = ({project}) => {
   const [preview,setPreview] = useState("")
   const [show, setShow] = useState(false);
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleClose = () => {
+    setShow(false)
+    setProjectDetails({id:project?._id,title:project?.title,languages:project?.languages,github:project?.github,websites:project?.websites,overview:project?.overview,projectImg:""})
+  };
+  const handleShow = () => {
+    setShow(true)
+    setProjectDetails({id:project?._id,title:project?.title,languages:project?.languages,github:project?.github,websites:project?.websites,overview:project?.overview,projectImg:""})
+  };
 
   useEffect(()=>{
-    if(projectDetails.projectImg){
+    if(projectDetails.projectImg.type=="image/jpeg" || projectDetails.projectImg.type=="image/jpg" || projectDetails.projectImg.type=="image/png" ){
       setPreview(URL.createObjectURL(projectDetails.projectImg))
       setImageFileStatus(true)
     }else{
       setImageFileStatus(false)
       setPreview("")
+      setProjectDetails({...projectDetails,projectImg:""})
     }
   },[projectDetails.projectImg])
 
+  const handleUpdateProject = async ()=>{
+    const {id,title,languages,github,websites,overview,projectImg} = projectDetails 
+    if(title && languages && github && websites && overview){
+      //api call
+      //req-body
+      const reqBody = new FormData()
+      reqBody.append("title",title)
+      reqBody.append("languages",languages)
+      reqBody.append("github",github)
+      reqBody.append("websites",websites)
+      reqBody.append("overview",overview)
+      preview?reqBody.append("projectImg",projectImg):reqBody.append("projectImg",project.projectImg)
 
+      const token = sessionStorage.getItem("token")
+        if(token){
+          const reqHeader = {
+            "Content-Type": preview?"multipart/form-data":"application/json",
+            "Authorization":`Bearer ${token}`
+          }
+          //api call
+          try{
+            const result = await editProjectAPI(id,reqBody,reqHeader)
+            if(result.status==200){
+              handleClose()
+              // pass response to view
+              setEditResponse(result)
+            }else{
+              console.log(result.response);
+            }
+          }catch(err){
+            console.log(err);
+          }
+        }
+    }else{
+      toast.warning("Please fill the form completely")
+    }
+  }
 
 
   return (
@@ -48,7 +95,7 @@ const Edit = ({project}) => {
                 <input type="file" style={{display:'none'}} 
                 onChange={e=>setProjectDetails({...projectDetails,projectImg:e.target.files[0]})}
                 />
-                <img height ={'200px'} classNameimg-fluid src={`${SERVERURL}/uploads/${project?.projectImg}`} alt="" />
+                <img height ={'200px'} classNameimg-fluid src={preview?preview:`${SERVERURL}/uploads/${project?.projectImg}`} alt="" />
               </label>
               { !imageFileStatus && <div className="text-warning fw-bolder my-2">
                 *Upload only the following file types (jpeg, jpg, png) here!!
@@ -91,11 +138,13 @@ const Edit = ({project}) => {
           <Button variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleClose}>
+          <Button variant="primary" onClick={handleUpdateProject}>
             Update
           </Button>
         </Modal.Footer>
       </Modal>
+      <ToastContainer position='top-center' theme='colored' autoclose={3000}/>
+
     </>
   )
 }

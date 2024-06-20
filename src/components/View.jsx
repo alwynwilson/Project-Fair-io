@@ -1,17 +1,19 @@
 import React, { useContext, useEffect, useState } from 'react'
 import Add from '../components/Add'
 import Edit from '../components/Edit'
-import { userProjectAPI } from '../services/allAPI'
-import { addResponseContext } from '../context/ContextAPI'
+import { removeProjectAPI, userProjectAPI } from '../services/allAPI'
+import { addResponseContext, editResponseContext } from '../context/ContextAPI'
+
 
 const View = () => {
 
+  const {editResponse,setEditResponse} = useContext(editResponseContext)
   const {addResponse,setAddResponse} = useContext(addResponseContext)
   const [userProjects,setUserProjects] = useState([])
 
   useEffect(()=>{
     getUserProjects()
-  },[addResponse])
+  },[addResponse,editResponse])
 
   const getUserProjects = async ()=>{
     const token = sessionStorage.getItem("token")
@@ -27,6 +29,26 @@ const View = () => {
         //console.log(result);
         if(result.status==200){
           setUserProjects(result.data)
+        }
+      }catch(err){
+        console.log(err);
+      }
+    }
+  }
+
+  const handleDeleteProject = async (pid)=>{
+    const token = sessionStorage.getItem("token")
+    if(token){
+      const reqHeader = {
+        "Content-Type": "application/json",
+        "Authorization":`Bearer ${token}`
+      }
+      try{
+        const result = await removeProjectAPI(pid,reqHeader)
+        if(result.status==200){
+          getUserProjects()
+        }else{
+          console.log(result);
         }
       }catch(err){
         console.log(err);
@@ -50,7 +72,7 @@ const View = () => {
             <div className="d-flex">
               <div><Edit project={project}/></div>
               <div className='btn'><a href={project?.github} target='_blank'><i className="fa-brands fa-github"></i></a></div>
-              <button className='btn text-danger'><i className='fa-solid fa-trash'></i></button>
+              <button onClick={()=>handleDeleteProject(project?._id)} className='btn text-danger'><i className='fa-solid fa-trash'></i></button>
             </div>
         </div>
           ))

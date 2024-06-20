@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import ProjectCard from '../components/ProjectCard'
 import {Col, Row} from 'react-bootstrap'
@@ -42,10 +42,16 @@ const Projects = () => {
           <input type="text" className='form-control w-25' placeholder='Search projects by language used'/>
         </div>
         <Row className="mt-3">
-          <Col className="mb-3" sm={12} md={6} lg={4}>
-            <ProjectCard/>
-          </Col>
-          
+        {
+          allProjects?.length>0?
+          allProjects?.map(project=>(
+            <Col key={project?.id} className='mb-3' sm={12} md={6} lg={3} >
+            <ProjectCard displayData={project}/>
+            </Col>
+          ))
+          :
+          <div className="fw-bolder text-danger m-5 text-center">Projects Not found</div>
+       }
         </Row>
       </div>
     </>
